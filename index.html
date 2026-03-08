@@ -610,6 +610,154 @@
             60% { transform: scale(1); }
         }
 
+        /* ===== MUSIC BUTTON ===== */
+        .music-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9999;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #e91e63, #9c27b0);
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 5px 25px rgba(233, 30, 99, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            animation: musicBtnPulse 2s ease-in-out infinite;
+        }
+
+        .music-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 8px 35px rgba(233, 30, 99, 0.7);
+        }
+
+        .music-btn.playing {
+            animation: musicBtnPulse 2s ease-in-out infinite, musicBtnSpin 3s linear infinite;
+        }
+
+        @keyframes musicBtnPulse {
+            0%, 100% { box-shadow: 0 5px 25px rgba(233, 30, 99, 0.5); }
+            50% { box-shadow: 0 5px 35px rgba(233, 30, 99, 0.8), 0 0 60px rgba(233, 30, 99, 0.3); }
+        }
+
+        @keyframes musicBtnSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Music note animation around button */
+        .music-notes {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            z-index: 9998;
+            pointer-events: none;
+        }
+
+        .music-note {
+            position: absolute;
+            font-size: 1.2rem;
+            opacity: 0;
+            animation: none;
+        }
+
+        .music-notes.active .music-note {
+            animation: floatNote 2.5s ease-out infinite;
+        }
+
+        .music-notes.active .music-note:nth-child(1) { animation-delay: 0s; left: 50%; top: 50%; }
+        .music-notes.active .music-note:nth-child(2) { animation-delay: 0.5s; left: 30%; top: 50%; }
+        .music-notes.active .music-note:nth-child(3) { animation-delay: 1s; left: 70%; top: 50%; }
+        .music-notes.active .music-note:nth-child(4) { animation-delay: 1.5s; left: 50%; top: 50%; }
+
+        @keyframes floatNote {
+            0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0.8; }
+            100% { transform: translateY(-80px) rotate(30deg) scale(0.3); opacity: 0; }
+        }
+
+        /* Auto-play overlay prompt */
+        .autoplay-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .autoplay-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .autoplay-box {
+            background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+            border-radius: 25px;
+            padding: 40px 50px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: boxAppear 0.6s ease-out;
+            max-width: 420px;
+        }
+
+        @keyframes boxAppear {
+            from { transform: scale(0.7) translateY(30px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .autoplay-box .emoji-big {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            animation: emojiPulse 1.5s ease-in-out infinite;
+        }
+
+        .autoplay-box h3 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            color: #880e4f;
+            margin-bottom: 10px;
+        }
+
+        .autoplay-box p {
+            color: #ad1457;
+            font-size: 1rem;
+            margin-bottom: 25px;
+        }
+
+        .autoplay-box button {
+            background: linear-gradient(135deg, #e91e63, #c2185b);
+            color: white;
+            border: none;
+            padding: 14px 45px;
+            font-size: 1.2rem;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(233, 30, 99, 0.4);
+        }
+
+        .autoplay-box button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(233, 30, 99, 0.6);
+        }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .date-display { font-size: 5rem; }
@@ -632,6 +780,32 @@
     </style>
 </head>
 <body>
+
+    <!-- Background Music -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="Dạo Bước Hongkong 1999 _ 漫步香港1999.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Auto-play Overlay -->
+    <div class="autoplay-overlay" id="autoplayOverlay">
+        <div class="autoplay-box">
+            <div class="emoji-big">🌸💐🌷</div>
+            <h3>Chúc Mừng Ngày 8/3!</h3>
+            <p>Nhấn để mở trang chúc mừng<br>cùng giai điệu ngọt ngào 🎵</p>
+            <button onclick="startExperience()">🌹 Bắt Đầu 🌹</button>
+        </div>
+    </div>
+
+    <!-- Music Toggle Button -->
+    <button class="music-btn playing" id="musicBtn" onclick="toggleMusic()" title="Bật/Tắt nhạc">
+        🎵
+    </button>
+    <div class="music-notes active" id="musicNotes">
+        <span class="music-note">♪</span>
+        <span class="music-note">♫</span>
+        <span class="music-note">♬</span>
+        <span class="music-note">♩</span>
+    </div>
 
     <!-- Floating Hearts -->
     <div class="hearts-container" id="heartsContainer"></div>
@@ -754,6 +928,46 @@
     </div>
 
     <script>
+        // ===== MUSIC CONTROL =====
+        const bgMusic = document.getElementById('bgMusic');
+        const musicBtn = document.getElementById('musicBtn');
+        const musicNotes = document.getElementById('musicNotes');
+        const autoplayOverlay = document.getElementById('autoplayOverlay');
+        let isPlaying = false;
+
+        function startExperience() {
+            autoplayOverlay.classList.add('hidden');
+            bgMusic.volume = 0.5;
+            bgMusic.play().then(() => {
+                isPlaying = true;
+                musicBtn.classList.add('playing');
+                musicNotes.classList.add('active');
+                musicBtn.textContent = '🎵';
+            }).catch(() => {
+                isPlaying = false;
+                musicBtn.classList.remove('playing');
+                musicNotes.classList.remove('active');
+                musicBtn.textContent = '🔇';
+            });
+            setTimeout(() => autoplayOverlay.remove(), 600);
+        }
+
+        function toggleMusic() {
+            if (isPlaying) {
+                bgMusic.pause();
+                isPlaying = false;
+                musicBtn.classList.remove('playing');
+                musicNotes.classList.remove('active');
+                musicBtn.textContent = '🔇';
+            } else {
+                bgMusic.play();
+                isPlaying = true;
+                musicBtn.classList.add('playing');
+                musicNotes.classList.add('active');
+                musicBtn.textContent = '🎵';
+            }
+        }
+
         // ===== Generate Floating Hearts =====
         const heartsContainer = document.getElementById('heartsContainer');
         const heartSymbols = ['❤️', '💕', '💖', '💗', '💝', '💘', '♥️', '💓', '💞'];
