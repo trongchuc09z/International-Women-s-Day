@@ -758,6 +758,132 @@
             box-shadow: 0 8px 30px rgba(233, 30, 99, 0.6);
         }
 
+        /* ===== HEART BURST ON START ===== */
+        .heart-burst-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100000;
+            overflow: hidden;
+        }
+
+        .burst-heart {
+            position: absolute;
+            font-size: 2rem;
+            animation: burstHeartRise ease-out forwards;
+            pointer-events: none;
+            filter: drop-shadow(0 0 6px rgba(255, 64, 129, 0.6));
+        }
+
+        @keyframes burstHeartRise {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(0.3) rotate(0deg);
+            }
+            20% {
+                opacity: 1;
+                transform: translateY(-10vh) scale(1.3) rotate(var(--rot1, 20deg));
+            }
+            60% {
+                opacity: 0.9;
+                transform: translateY(-50vh) scale(1) rotate(var(--rot2, -15deg));
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-110vh) scale(0.5) rotate(var(--rot3, 30deg));
+            }
+        }
+
+        /* Heart trail behind each burst heart */
+        .burst-heart::after {
+            content: '💗';
+            position: absolute;
+            font-size: 0.5em;
+            top: 10px;
+            left: 5px;
+            opacity: 0.5;
+            animation: trailPulse 0.6s ease-in-out infinite alternate;
+        }
+
+        @keyframes trailPulse {
+            from { transform: scale(0.8); opacity: 0.3; }
+            to { transform: scale(1.2); opacity: 0.7; }
+        }
+
+        /* Big center heart explosion */
+        .heart-explosion {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8rem;
+            z-index: 100001;
+            pointer-events: none;
+            animation: heartExplode 1.5s ease-out forwards;
+        }
+
+        @keyframes heartExplode {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 1;
+            }
+            30% {
+                transform: translate(-50%, -50%) scale(1.5);
+                opacity: 1;
+            }
+            60% {
+                transform: translate(-50%, -50%) scale(2);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(3);
+                opacity: 0;
+            }
+        }
+
+        /* Shockwave ring effect */
+        .heart-shockwave {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            border: 4px solid #e91e63;
+            border-radius: 50%;
+            z-index: 100000;
+            pointer-events: none;
+            animation: shockwave 1.2s ease-out forwards;
+        }
+
+        .heart-shockwave:nth-child(2) {
+            animation-delay: 0.2s;
+            border-color: #ff4081;
+        }
+
+        .heart-shockwave:nth-child(3) {
+            animation-delay: 0.4s;
+            border-color: #f48fb1;
+        }
+
+        @keyframes shockwave {
+            0% {
+                width: 10px;
+                height: 10px;
+                opacity: 1;
+                border-width: 4px;
+            }
+            100% {
+                width: 100vw;
+                height: 100vw;
+                opacity: 0;
+                border-width: 1px;
+            }
+        }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .date-display { font-size: 5rem; }
@@ -936,6 +1062,9 @@
         let isPlaying = false;
 
         function startExperience() {
+            // Trigger heart burst explosion
+            launchHeartBurst();
+
             autoplayOverlay.classList.add('hidden');
             bgMusic.volume = 0.5;
             bgMusic.play().then(() => {
@@ -950,6 +1079,126 @@
                 musicBtn.textContent = '🔇';
             });
             setTimeout(() => autoplayOverlay.remove(), 600);
+        }
+
+        // ===== HEART BURST EFFECT =====
+        function launchHeartBurst() {
+            const burstHearts = ['❤️', '💕', '💖', '💗', '💝', '💘', '💓', '💞', '💟', '♥️', '🩷', '🤍', '🩵', '💜', '🧡'];
+
+            // Create burst container
+            const burstContainer = document.createElement('div');
+            burstContainer.className = 'heart-burst-container';
+            document.body.appendChild(burstContainer);
+
+            // Big center heart explosion
+            const bigHeart = document.createElement('div');
+            bigHeart.className = 'heart-explosion';
+            bigHeart.textContent = '💖';
+            document.body.appendChild(bigHeart);
+
+            // Shockwave rings
+            for (let r = 0; r < 3; r++) {
+                const ring = document.createElement('div');
+                ring.className = 'heart-shockwave';
+                document.body.appendChild(ring);
+                setTimeout(() => ring.remove(), 2000);
+            }
+
+            // Wave 1: Initial burst from center (40 hearts)
+            for (let i = 0; i < 40; i++) {
+                setTimeout(() => {
+                    createBurstHeart(burstContainer, burstHearts, {
+                        startX: 45 + Math.random() * 10,
+                        startY: 50,
+                        duration: 2.5 + Math.random() * 2,
+                        size: 1.2 + Math.random() * 2
+                    });
+                }, i * 30);
+            }
+
+            // Wave 2: Scattered burst (30 hearts)
+            setTimeout(() => {
+                for (let i = 0; i < 30; i++) {
+                    setTimeout(() => {
+                        createBurstHeart(burstContainer, burstHearts, {
+                            startX: Math.random() * 100,
+                            startY: 60 + Math.random() * 40,
+                            duration: 3 + Math.random() * 2.5,
+                            size: 1 + Math.random() * 1.8
+                        });
+                    }, i * 50);
+                }
+            }, 300);
+
+            // Wave 3: Side bursts (20 hearts from each side)
+            setTimeout(() => {
+                for (let i = 0; i < 20; i++) {
+                    setTimeout(() => {
+                        // Left side
+                        createBurstHeart(burstContainer, burstHearts, {
+                            startX: Math.random() * 30,
+                            startY: 70 + Math.random() * 30,
+                            duration: 2.5 + Math.random() * 2,
+                            size: 1.5 + Math.random() * 1.5
+                        });
+                        // Right side
+                        createBurstHeart(burstContainer, burstHearts, {
+                            startX: 70 + Math.random() * 30,
+                            startY: 70 + Math.random() * 30,
+                            duration: 2.5 + Math.random() * 2,
+                            size: 1.5 + Math.random() * 1.5
+                        });
+                    }, i * 60);
+                }
+            }, 600);
+
+            // Wave 4: Final gentle wave (20 hearts)
+            setTimeout(() => {
+                for (let i = 0; i < 20; i++) {
+                    setTimeout(() => {
+                        createBurstHeart(burstContainer, burstHearts, {
+                            startX: 10 + Math.random() * 80,
+                            startY: 80 + Math.random() * 20,
+                            duration: 4 + Math.random() * 3,
+                            size: 0.8 + Math.random() * 1.2
+                        });
+                    }, i * 80);
+                }
+            }, 1200);
+
+            // Cleanup
+            setTimeout(() => {
+                bigHeart.remove();
+                burstContainer.remove();
+            }, 8000);
+        }
+
+        function createBurstHeart(container, hearts, options) {
+            const heart = document.createElement('div');
+            heart.className = 'burst-heart';
+            heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+            
+            const rot1 = -40 + Math.random() * 80;
+            const rot2 = -60 + Math.random() * 120;
+            const rot3 = -30 + Math.random() * 60;
+            
+            heart.style.cssText = `
+                left: ${options.startX}%;
+                bottom: ${100 - options.startY}%;
+                font-size: ${options.size}rem;
+                animation-duration: ${options.duration}s;
+                --rot1: ${rot1}deg;
+                --rot2: ${rot2}deg;
+                --rot3: ${rot3}deg;
+            `;
+            
+            // Add horizontal sway
+            const swayX = -100 + Math.random() * 200;
+            heart.style.marginLeft = `${swayX}px`;
+            
+            container.appendChild(heart);
+            
+            setTimeout(() => heart.remove(), options.duration * 1000);
         }
 
         function toggleMusic() {
